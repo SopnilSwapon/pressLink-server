@@ -4,13 +4,9 @@ const app = express();
 const  cors = require('cors');
 const port = process.env.PORT || 4000;
 
-// pressLink
-// DB PASS: bmmVwSwmbQmeK3qo
-// middlewares //
 app.use(cors());
 app.use(express.json());
 
-console.log(process.env.DB_USER);
 const { MongoClient, ServerApiVersion } = require('mongodb');
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.nshaxle.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
 
@@ -22,11 +18,23 @@ const client = new MongoClient(uri, {
     deprecationErrors: true,
   }
 });
-
+ const newsCollection = client.db('pressLinkDB').collection('news');
+ const usersCollection = client.db('pressLinkDB').collection('users')
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
     await client.connect();
+
+    app.post('/news', async(req, res) =>{
+    const singleNews = req.body;
+    const result = await newsCollection.insertOne(singleNews);
+    res.send(result);
+    });
+    app.post('/users', async(req, res) =>{
+        const user = req.body;
+        const result = await usersCollection.insertOne(user);
+        res.send(result);
+    })
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
