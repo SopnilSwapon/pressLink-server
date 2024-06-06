@@ -30,6 +30,10 @@ async function run() {
     const result = await newsCollection.insertOne(singleNews);
     res.send(result);
     });
+    app.get('/news', async(req, res) =>{
+      const result = await newsCollection.find().toArray();
+      res.send(result);
+    })
     app.post('/users', async(req, res) =>{
         const user = req.body;
         const result = await usersCollection.insertOne(user);
