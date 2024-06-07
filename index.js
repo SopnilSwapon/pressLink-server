@@ -39,6 +39,23 @@ async function run() {
         const result = await usersCollection.insertOne(user);
         res.send(result);
     })
+    // get only publisher api //
+    app.get('/news/publishers', async (req, res) =>{
+      const publishers = await newsCollection.aggregate([
+        {
+          $group : {
+            _id: "$publisher"
+          }
+        },
+        {
+          $project : {
+            _id: 0,
+            publisher: '$_id'
+          }
+        }
+      ]).toArray();
+      res.send(publishers);
+    } )
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
