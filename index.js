@@ -55,7 +55,15 @@ async function run() {
         }
       ]).toArray();
       res.send(publishers);
-    } )
+    } );
+    // get specific publisher's news //
+    app.get('/news/:publisher', async(req, res) =>{
+      const publisher = req.params.publisher;
+      const query = {publisher: publisher};
+      const result = await newsCollection.find(query).toArray();
+      res.send(result);
+
+    })
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
