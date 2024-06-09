@@ -30,6 +30,8 @@ async function run() {
     const result = await newsCollection.insertOne(singleNews);
     res.send(result);
     });
+     // get all tags //
+    
     app.get('/news', async(req, res) =>{
       const result = await newsCollection.find().toArray();
       res.send(result);
@@ -63,7 +65,30 @@ async function run() {
       const result = await newsCollection.find(query).toArray();
       res.send(result);
 
+    });
+    // get specific news by searching headline//
+    app.get('/news/search/:headline', async (req, res) => {
+      const headline = req.params.headline;
+      const query = {headline: {$regex: headline, $options: 'i'}}
+      const result = await newsCollection.find(query).toArray();
+      res.send(result);
+    });
+    app.get('/news-tags', async (req, res) =>{
+      const result = await newsCollection.aggregate([
+        { $unwind: '$tags'},
+        { $group: {_id: '$tags'}},
+        { $project: {_id: 0, tag: "$_id"} }
+      ]).toArray();
+      res.send(result)
+    });
+    app.get('/newsTags/:tag', async (req, res) =>{
+      const tag = req.params.tag;
+      const query = {tags: tag}
+      const result = await newsCollection.find(query).toArray();
+      res.send(result)
+
     })
+    
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
