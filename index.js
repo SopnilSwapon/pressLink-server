@@ -24,22 +24,32 @@ async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
     await client.connect();
+// ______________users related api___________________//
+app.post('/users', async(req, res) =>{
+  const user = req.body;
+  const query = {email: user.email};
+  const existingUser = await usersCollection.findOne(query);
+  if(existingUser){
+    return res.send({message: 'This user have already exist'})
+  }
+  const result = await usersCollection.insertOne(user);
+  res.send(result);
+})
+// app.post('/users', async (req, res) =>{
+//   const users = req.body;
+//   const result = await usersCollection.insertOne(users)
+// })
 
+  // _______________news related api____________________//
     app.post('/news', async(req, res) =>{
     const singleNews = req.body;
     const result = await newsCollection.insertOne(singleNews);
     res.send(result);
     });
      // get all tags //
-    
     app.get('/news', async(req, res) =>{
       const result = await newsCollection.find().toArray();
       res.send(result);
-    })
-    app.post('/users', async(req, res) =>{
-        const user = req.body;
-        const result = await usersCollection.insertOne(user);
-        res.send(result);
     })
     // get only publisher api //
     app.get('/news/publishers', async (req, res) =>{
