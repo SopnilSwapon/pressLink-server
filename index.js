@@ -38,6 +38,26 @@ app.post('/users', async(req, res) =>{
 app.get('/users', async (req, res) =>{
   const result = await usersCollection.find().toArray();
   res.send(result)
+});
+
+app.get('/user/role/:email', async(req, res) =>{
+  const email = req.params.email;
+  const query = {email: email};
+  const result = await usersCollection.findOne(query);
+  res.send(result);
+});
+app.put('/user/role/:email', async (req, res) =>{
+  const email = req.params.email;
+  const userInfo = req.body;
+  const options = {upsert: true}
+  const query = {email: email};
+  const updateUserInfo = {
+    $set:{
+        ...userInfo
+    }
+    }
+  const result = await usersCollection.updateOne(query, updateUserInfo, options);
+  res.send(result)
 })
 
   // _______________news related api____________________//
