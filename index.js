@@ -99,6 +99,12 @@ app.put('/user/role/:email', async (req, res) =>{
     app.get('/news', async(req, res) =>{
       const result = await newsCollection.find().toArray();
       res.send(result);
+    });
+    app.delete('/news/:id', async(req, res) =>{
+      const id = req.params.id;
+      const query = {_id: new ObjectId(id)};
+      const result = await newsCollection.deleteOne(query)
+      res.send(result)
     })
     // get only publisher api //
     app.get('/news/publishers', async (req, res) =>{
