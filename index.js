@@ -7,7 +7,7 @@ const port = process.env.PORT || 4000;
 app.use(cors());
 app.use(express.json());
 
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.nshaxle.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
@@ -18,6 +18,7 @@ const client = new MongoClient(uri, {
     deprecationErrors: true,
   }
 });
+ const AddedNewsCollection = client.db('pressLinkDB').collection('added');
  const newsCollection = client.db('pressLinkDB').collection('news');
  const usersCollection = client.db('pressLinkDB').collection('users')
 async function run() {
@@ -63,9 +64,37 @@ app.put('/user/role/:email', async (req, res) =>{
   // _______________news related api____________________//
     app.post('/news', async(req, res) =>{
     const singleNews = req.body;
-    const result = await newsCollection.insertOne(singleNews);
+    const result = await AddedNewsCollection.insertOne(singleNews);
     res.send(result);
     });
+    app.get('/added/news', async (req, res) =>{
+      const result = await AddedNewsCollection.find().toArray();
+      res.send(result);
+    });
+    app.post('/news/approved', async(req, res) =>{
+      const approvedNews = req.body;
+      const result = await newsCollection.insertOne(approvedNews);
+      res.send(result)
+    })
+    app.delete('/added/news/:id', async(req, res) =>{
+      const id = req.params.id;
+      const query = {_id: new ObjectId(id)};
+      const result = await AddedNewsCollection.deleteOne(query);
+      res.send(result)
+    });
+    app.put('/added/news/:id', async (req, res) =>{
+      const id = req.params.id;
+      const news = req.body
+      const query = {_id: new ObjectId(id)};
+      const options = {upsert: true}
+      const updateDoc = {
+        $set: {
+          ...news
+        }
+      };
+     const result = await AddedNewsCollection.updateOne(query, updateDoc, options);
+     res.send(result)
+    })
      // get all tags //
     app.get('/news', async(req, res) =>{
       const result = await newsCollection.find().toArray();
