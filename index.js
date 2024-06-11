@@ -71,6 +71,13 @@ app.put('/user/role/:email', async (req, res) =>{
       const result = await AddedNewsCollection.find().toArray();
       res.send(result);
     });
+    // single news //
+    app.get('/news/one/:id', async(req, res) =>{
+      const id = req.params.id;
+      const query = {_id: new ObjectId(id)};
+      const result = await newsCollection.findOne(query);
+      res.send(result)
+    });
     app.post('/news/approved', async(req, res) =>{
       const approvedNews = req.body;
       const result = await newsCollection.insertOne(approvedNews);
@@ -100,12 +107,13 @@ app.put('/user/role/:email', async (req, res) =>{
       const result = await newsCollection.find().toArray();
       res.send(result);
     });
-    app.delete('/news/:id', async(req, res) =>{
-      const id = req.params.id;
-      const query = {_id: new ObjectId(id)};
-      const result = await newsCollection.deleteOne(query)
-      res.send(result)
-    })
+    //Delete new//
+    // app.delete('/news/:email', async(req, res) =>{
+    //   const email = req.params.email;
+    //   const query = {email: email};
+    //   const result = await newsCollection.deleteOne(query)
+    //   res.send(result)
+    // })
     // get only publisher api //
     app.get('/news/publishers', async (req, res) =>{
       const publishers = await newsCollection.aggregate([
