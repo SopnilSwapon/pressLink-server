@@ -21,6 +21,7 @@ const client = new MongoClient(uri, {
  const AddedNewsCollection = client.db('pressLinkDB').collection('added');
  const newsCollection = client.db('pressLinkDB').collection('news');
  const usersCollection = client.db('pressLinkDB').collection('users')
+ const publisherCollection = client.db('pressLinkDB').collection('publisher')
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
@@ -59,7 +60,13 @@ app.put('/user/role/:email', async (req, res) =>{
     }
   const result = await usersCollection.updateOne(query, updateUserInfo, options);
   res.send(result)
-})
+});
+// _________________publisher related api________________//
+   app.post('/publisher', async (req, res) =>{
+    const publisher = req.body;
+    const result = await publisherCollection.insertOne(publisher);
+    res.send(result);
+   })
 
   // _______________news related api____________________//
     app.post('/news', async(req, res) =>{
@@ -78,6 +85,13 @@ app.put('/user/role/:email', async (req, res) =>{
       const result = await newsCollection.findOne(query);
       res.send(result)
     });
+    // currents user's News//
+    app.get('/news/some/:email', async(req, res) =>{
+      const email = req.params.email;
+      const query = {author_email: email};
+      const result = await AddedNewsCollection.find(query).toArray();
+      res.send(result);
+    })
     app.post('/news/approved', async(req, res) =>{
       const approvedNews = req.body;
       const result = await newsCollection.insertOne(approvedNews);
@@ -107,13 +121,14 @@ app.put('/user/role/:email', async (req, res) =>{
       const result = await newsCollection.find().toArray();
       res.send(result);
     });
-    //Delete new//
-    // app.delete('/news/:email', async(req, res) =>{
-    //   const email = req.params.email;
-    //   const query = {email: email};
-    //   const result = await newsCollection.deleteOne(query)
-    //   res.send(result)
-    // })
+    // Delete new//
+    app.delete('/news/remove', async(req, res) =>{
+
+      const filter = req.body;
+      const newsResult = await newsCollection.deleteOne(filter);
+      const addedResult = await AddedNewsCollection.deleteOne(filter);
+      res.send({newsResult, addedResult})
+    })
     // get only publisher api //
     app.get('/news/publishers', async (req, res) =>{
       const publishers = await newsCollection.aggregate([
