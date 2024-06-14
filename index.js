@@ -105,7 +105,8 @@ app.put('/user/role/:email', async (req, res) =>{
     });
     app.put('/added/news/:id', async (req, res) =>{
       const id = req.params.id;
-      const news = req.body
+      const news = req.body;
+      console.log('from update', news, id);
       const query = {_id: new ObjectId(id)};
       const options = {upsert: true}
       const updateDoc = {
@@ -121,13 +122,17 @@ app.put('/user/role/:email', async (req, res) =>{
       const result = await newsCollection.find().toArray();
       res.send(result);
     });
-    // Delete new//
-    app.delete('/news/remove', async(req, res) =>{
-
+    // Delete news by using post method//
+    app.post('/news/remove', async(req, res) =>{
       const filter = req.body;
       const newsResult = await newsCollection.deleteOne(filter);
       const addedResult = await AddedNewsCollection.deleteOne(filter);
       res.send({newsResult, addedResult})
+    });
+    app.get('/news/premium', async (req, res) =>{
+      const filter = {isPremium: true};
+      const result = await newsCollection.find(filter).toArray();
+      res.send(result);
     })
     // get only publisher api //
     app.get('/news/publishers', async (req, res) =>{
