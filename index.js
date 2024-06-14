@@ -22,6 +22,7 @@ const client = new MongoClient(uri, {
  const newsCollection = client.db('pressLinkDB').collection('news');
  const usersCollection = client.db('pressLinkDB').collection('users')
  const publisherCollection = client.db('pressLinkDB').collection('publisher')
+ const paymentCollection = client.db('pressLinkDB').collection('payment')
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
@@ -181,7 +182,25 @@ app.put('/user/role/:email', async (req, res) =>{
       res.send(result)
 
     })
-    
+    // payment related api //
+    app.post('/payment', async (req, res) =>{
+      const paymentInfo = req.body;
+      // check if user has pending plan
+    const isPendingPlan = await paymentCollection.findOne({ user: paymentInfo.user, status: 'pending' });
+
+     // update pending payment if find any
+     if (isPendingPlan) {
+      const updated = await paymentCollection.updateOne(
+          { user: paymentInfo.user },
+          { $set: { ...paymentInfo } },
+          { upsert: true }
+      )
+      return res.send(updated);
+  }
+
+      const result = await paymentCollection.insertOne(paymentInfo);
+      res.send(result)
+    })
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
