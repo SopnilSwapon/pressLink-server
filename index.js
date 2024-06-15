@@ -152,19 +152,7 @@ app.put('/user/role/:email', async (req, res) =>{
     })
     // get only publisher api //
     app.get('/news/publishers', async (req, res) =>{
-      const publishers = await newsCollection.aggregate([
-        {
-          $group : {
-            _id: "$publisher"
-          }
-        },
-        {
-          $project : {
-            _id: 0,
-            publisher: '$_id'
-          }
-        }
-      ]).toArray();
+      const publishers = await publisherCollection.find().toArray();
       res.send(publishers);
     } );
     // get specific publisher's news //
