@@ -82,7 +82,48 @@ app.put('/user/role/:email', async (req, res) =>{
     const publisher = req.body;
     const result = await publisherCollection.insertOne(publisher);
     res.send(result);
-   })
+   });
+   app.get('/publisher/percentages', async (req, res) => {
+    const aggregation = [
+        {
+            $group: {
+                _id: "$publisher",
+                count: { $sum: 1 }
+            }
+        },
+        {
+            $group: {
+                _id: null,
+                total: { $sum: "$count" },
+                publications: {
+                    $push: {
+                        publisher: "$_id",
+                        count: "$count"
+                    }
+                }
+            }
+        },
+        {
+            $unwind: "$publications"
+        },
+        {
+            $project: {
+                _id: 0,
+                publication: "$publications.publisher",
+                percentage: {
+                    $multiply: [
+                        { $divide: ["$publications.count", "$total"] },
+                        100
+                    ]
+                }
+            }
+        }
+    ];
+
+    const publicationPercentages = await newsCollection.aggregate(aggregation).toArray();
+
+    res.send(publicationPercentages);
+});
 
   // _______________news related api____________________//
     app.post('/news', async(req, res) =>{
@@ -94,10 +135,25 @@ app.put('/user/role/:email', async (req, res) =>{
       const result = await AddedNewsCollection.find().toArray();
       res.send(result);
     });
+  //  Get most six views News //
+    app.get('/foods/six', async (req, res) => {
+      const size = parseInt(req.query.size);
+      const sorted = parseInt(req.query.sort);
+      const result = await foodsCollection.find().sort({ purchase: sorted }).limit(size).toArray();
+      res.send(result)
+    });
+    app.get('/news/six', async (req, res) =>{
+      const size = parseInt(req.query.size);
+      const sorted = parseInt(req.query.sort);
+      const result = await newsCollection.find().sort({views: sorted}).limit(size).toArray();
+      res.send(result)
+    })
     // single news //
     app.get('/news/one/:id', async(req, res) =>{
       const id = req.params.id;
       const query = {_id: new ObjectId(id)};
+      const updateView = { $inc: { views: 1 } };
+      await newsCollection.updateOne(query, updateView);
       const result = await newsCollection.findOne(query);
       res.send(result)
     });
