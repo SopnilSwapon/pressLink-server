@@ -64,6 +64,16 @@ app.get('/user/role/:email', async(req, res) =>{
   const result = await usersCollection.findOne(query);
   res.send(result);
 });
+app.get('/users/premium', async (req, res) =>{
+  const filter = {isPremium: true}
+  const result = await usersCollection.find(filter).toArray();
+  res.send(result)
+})
+app.get('/users/normal', async (req, res) =>{
+  const filter = {isPremium: false || null || undefined}
+  const result = await usersCollection.find(filter).toArray();
+  res.send(result)
+})
 app.put('/user/role/:email', async (req, res) =>{
   const email = req.params.email;
   const userInfo = req.body;
